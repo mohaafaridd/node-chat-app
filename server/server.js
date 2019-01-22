@@ -16,17 +16,17 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => {
     console.log('New user connect');
 
-    // socket.emit from admin text welcome
+    // Private message, greeting user
     socket.emit('newMessage', generateMessage('Admin', 'Welcome to c.me'));
 
-    // socket.broadcast.emit from admin text new user joined
+    // Public message, alerting other users
     socket.broadcast.emit('newMessage', generateMessage('Admin', 'New User Joined'));
     
-    socket.on('createMessage', (message) => {
+    socket.on('createMessage', (message, callback) => {
         console.log('create message', message);
 
         io.emit('newMessage', generateMessage(message.from, message.text));
-
+        callback('This is from the server');
         // socket.broadcast.emit('newMessage', {
         //     from: message.from,
         //     text: message.text,
