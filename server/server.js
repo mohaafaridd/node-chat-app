@@ -4,7 +4,7 @@ const express = require('express');
 const socketIO = require('socket.io');
 
 const { generateMessage, generateLocationMessage } = require('./utils/message');
-const { isRealString } = require('./utils/validation');
+const { isRealString, isDuplicated } = require('./utils/validation');
 const { Users } = require('./utils/users');
 
 const publicPath = path.join(__dirname, '../public');
@@ -19,8 +19,12 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => {
     socket.on('join', (params, callback) => {
         if (!isRealString(params.name) || !isRealString(params.room)) {
-            return callback('Name and room name are required')
+            return callback('Name and room name are required');
         }
+        
+        if(isDuplicated(params.name, users)){
+            return callback('Name already exist in room');
+        };
 
         params.room = params.room.toLowerCase();
 
@@ -31,7 +35,7 @@ io.on('connection', (socket) => {
         io.to(params.room).emit('updateUserList', users.getUserList(params.room))
 
         // Private message, greeting user
-        socket.emit('newMessage', generateMessage('Admin', 'Welcome to c.me'));
+        socket.emit('newMessage', generateMessage('Admin', 'Welcome to chat.me'));
 
         // Public message, alerting other users
         socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined`));
