@@ -17,12 +17,12 @@ var users = new Users;
 app.use(express.static(publicPath));
 
 io.on('connection', (socket) => {
-    console.log('New user connect');
-
     socket.on('join', (params, callback) => {
         if (!isRealString(params.name) || !isRealString(params.room)) {
             return callback('Name and room name are required')
         }
+
+        params.room = params.room.toLowerCase();
 
         socket.join(params.room);
         users.removeUser(socket.id);
